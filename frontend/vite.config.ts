@@ -9,6 +9,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:7000', // Proxy for API requests during development
+    },
+  },
   optimizeDeps: {
     include: ["react", "react-dom"],
   },
