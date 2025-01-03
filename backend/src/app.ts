@@ -18,7 +18,7 @@ app.use(cookieParser());
 connectDB();
 
 const corsOptions ={
-    origin: process.env.FRONTEND_URL,
+    origin: "*",
     credentials:true,
 }
 app.use(cors(corsOptions));
