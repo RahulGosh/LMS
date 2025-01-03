@@ -11,11 +11,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
-        target: 'https://lms-474m.onrender.com',
-        changeOrigin: true,
-        secure: false,  // Set to true if the backend uses HTTPS
-      },
+      '/api/v1': "http://localhost:7000"
     },
   },
   optimizeDeps: {
