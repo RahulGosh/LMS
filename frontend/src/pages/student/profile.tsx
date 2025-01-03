@@ -22,7 +22,7 @@ import { toast } from "sonner";
 
 const Profile = () => {
   const [name, setName] = useState("");
-  const [profilePhoto, setProfilePhoto] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState<File | string>("");
 
   const { data, isLoading, refetch } = useLoadUserQuery();
   const [
@@ -40,13 +40,15 @@ const Profile = () => {
 
   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setProfilePhoto(file);
+    if (file) setProfilePhoto(file); // No type error now
   };
 
   const updateUserHandler = async () => {
     const formData = new FormData();
     formData.append("name", name);
-    if (profilePhoto) formData.append("profilePhoto", profilePhoto);
+    if (profilePhoto instanceof File) {
+      formData.append("profilePhoto", profilePhoto);
+    }
 
     try {
       await updateUser(formData).unwrap();
