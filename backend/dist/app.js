@@ -22,8 +22,9 @@ app.use(body_parser_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
+const allowedOrigins = [process.env.FRONTEND_URL || `http://localhost:5173`];
 const corsOptions = {
-    origin: "http://localhost:5173",
+    origin: allowedOrigins, // Specify your frontend URL
     credentials: true
 };
 (0, database_1.connectDB)();
