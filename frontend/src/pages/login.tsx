@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react"; // Importing the Loader2 spinner icon
+import { Loader2 } from "lucide-react";
 import { Login, Register } from "@/types/types";
 import { useEffect, useState } from "react";
 import { useLoginMutation, useRegisterMutation } from "@/features/api/authApi";
@@ -19,6 +19,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useNavigate } from "react-router-dom";
 
 const LoginComponent = () => {
+  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [signupInput, setSignupInput] = useState<Register>({
     name: "",
     email: "",
@@ -49,20 +50,22 @@ const LoginComponent = () => {
     },
   ] = useLoginMutation();
 
-  console.log(registerData?.success);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (registerIsSuccess && registerData) {
       toast.success(registerData.message || "Registered Successfully");
-      navigate("/")
+      setActiveTab("login");
+      // Auto-fill the email in login form
+      setLoginInput(prev => ({ ...prev, email: signupInput.email }));
+      // Clear the signup form
+      setSignupInput({ name: "", email: "", password: "" });
     }
 
     if (registerError) {
       const errorData = (registerError as FetchBaseQueryError)?.data as {
         message?: string;
       };
-
       toast.error(errorData?.message || "Registration Failed");
     }
 
@@ -70,13 +73,12 @@ const LoginComponent = () => {
       const errorData = (loginError as FetchBaseQueryError)?.data as {
         message?: string;
       };
-
-      toast.error(errorData?.message || "Registration Failed");
+      toast.error(errorData?.message || "Login Failed");
     }
 
     if (loginIsSuccess && loginData) {
       toast.success(loginData.message || "LoggedIn Successfully");
-      navigate("/")
+      navigate("/");
     }
   }, [
     loginIsLoading,
@@ -85,6 +87,10 @@ const LoginComponent = () => {
     registerData,
     loginError,
     registerError,
+    loginIsSuccess,
+    registerIsSuccess,
+    signupInput.email,
+    navigate
   ]);
 
   const changeInputHandler = (
@@ -104,7 +110,6 @@ const LoginComponent = () => {
       const inputData = signupInput;
       try {
         await registerUser(inputData).unwrap();
-        console.log("Signup successful:", inputData);
       } catch (error) {
         console.error("Signup Error:", error);
       }
@@ -112,7 +117,6 @@ const LoginComponent = () => {
       const inputData = loginInput;
       try {
         await loginUser(inputData).unwrap();
-        console.log("Login successful:", inputData);
       } catch (error) {
         console.error("Login Error:", error);
       }
@@ -121,7 +125,11 @@ const LoginComponent = () => {
 
   return (
     <div className="flex items-center w-full justify-center mt-20">
-      <Tabs defaultValue="login" className="w-[400px]">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(value) => setActiveTab(value as "login" | "signup")} 
+        className="w-[400px]"
+      >
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signup">Signup</TabsTrigger>
           <TabsTrigger value="login">Login</TabsTrigger>
@@ -178,8 +186,7 @@ const LoginComponent = () => {
               >
                 {registerIsLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please
-                    wait
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
                   </>
                 ) : (
                   "Signup"
@@ -229,8 +236,7 @@ const LoginComponent = () => {
               >
                 {loginIsLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please
-                    wait
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
                   </>
                 ) : (
                   "Login"

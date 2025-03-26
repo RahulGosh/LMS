@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,7 +28,7 @@ import {
   useEnrollFreeCourseMutation,
   useGetCourseDetailWithStatusQuery,
 } from "@/features/api/purchaseApi";
-import { Lecture, SubLecture } from "@/types/types";
+import { Lecture, SubLecture, User } from "@/types/types";
 import BuyCourseButton from "@/components/buyCourseButton";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -38,6 +38,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
+import { RootState } from "@/app/store";
+import { useSelector } from "react-redux";
 
 const CourseDetail: React.FC = () => {
   const params = useParams<{ courseId: string }>();
@@ -48,12 +50,20 @@ const CourseDetail: React.FC = () => {
     null
   );
 
-  const { data, isLoading, isError } = useGetCourseDetailWithStatusQuery(
+  const { user } = useSelector((store: RootState) => store.auth) as { user: User | null };
+
+  const { data, isLoading, isError, refetch  } = useGetCourseDetailWithStatusQuery(
     courseId,
     {
       skip: !courseId,
     }
   );
+  useEffect(() => {
+    if (courseId) {
+      refetch();
+    }
+  }, [user, courseId, refetch]);
+
   const [enrollFreeCourse, { isLoading: isEnrolling }] =
     useEnrollFreeCourseMutation();
 
