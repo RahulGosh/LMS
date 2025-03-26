@@ -21,16 +21,14 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.json());
 app.use(cookieParser());
-
-const allowedOrigins = [process.env.FRONTEND_URL || `http://localhost:5173`];
-
 const corsOptions = {
-    origin: allowedOrigins, // Specify your frontend URL
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true
 }
 connectDB();
 app.use(cors(corsOptions));
 
+app.use("/api/v1", user);
 app.use("/api/v1", course);
 app.use("/api/v1", coursePurchase);
 app.use("/api/v1", courseProgress);
