@@ -2,8 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { LoginResponse, ProfileData, RegisterBody, UpdateUserResponse } from "../../types/types";
 import { userLoggedIn, userLoggedOut } from "../authSlice";
 
-const USER_API = "http://localhost:7000/api/v1"
-// const USER_API = `${import.meta.env.VITE_BACKEND_URL}/api/v1/`;
+// const USER_API = "http://localhost:7000/api/v1"
+const USER_API = `${import.meta.env.VITE_BACKEND_URL}/api/v1/`;
 
 console.log(import.meta.env.VITE_BACKEND_URL);  // Log the URL to ensure it's loaded correctly
 
