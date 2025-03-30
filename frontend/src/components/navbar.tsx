@@ -28,7 +28,9 @@ import { RootState } from "@/app/store";
 import { User } from "../types/types";
 
 const Navbar: React.FC = () => {
-  const { user } = useSelector((store: RootState) => store.auth) as { user: User | null };
+  const { user } = useSelector((store: RootState) => store.auth) as {
+    user: User | null;
+  };
   const [logoutUser, { data, isSuccess }] = useLogoutMutation();
   const navigate = useNavigate();
 
@@ -78,12 +80,18 @@ const Navbar: React.FC = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem>
-                    <Link to="/my-learning" className="hover:text-blue-500 transition">
+                    <Link
+                      to="/my-learning"
+                      className="hover:text-blue-500 transition"
+                    >
                       My Learning
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/profile" className="hover:text-blue-500 transition">
+                    <Link
+                      to="/profile"
+                      className="hover:text-blue-500 transition"
+                    >
                       Edit Profile
                     </Link>
                   </DropdownMenuItem>
@@ -98,7 +106,10 @@ const Navbar: React.FC = () => {
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>
-                      <Link to="/admin/dashboard" className="hover:text-blue-500 transition">
+                      <Link
+                        to="/admin/dashboard"
+                        className="hover:text-blue-500 transition"
+                      >
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
@@ -159,7 +170,9 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({ user }) => {
       <SheetContent className="flex flex-col bg-white text-gray-800 border border-gray-200 shadow-md">
         <SheetHeader className="flex flex-row items-center justify-between mt-2">
           <SheetTitle>
-            <Link to="/" className="text-gray-900">E-Learning</Link>
+            <Link to="/" className="text-gray-900">
+              E-Learning
+            </Link>
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col space-y-4 mt-6">
@@ -169,6 +182,16 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({ user }) => {
           <Link to="/profile" className="hover:text-blue-500 transition">
             Edit Profile
           </Link>
+          {user?.role === "instructor" && (
+            <>
+                <Link
+                  to="/admin/dashboard"
+                  className="hover:text-blue-500 transition"
+                >
+                  Dashboard
+                </Link>
+            </>
+          )}
           {user && (
             <p
               className="cursor-pointer hover:text-red-500 transition"

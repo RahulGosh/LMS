@@ -14,7 +14,6 @@ import {
   useGetLectureByIdQuery,
   useRemoveLectureMutation,
 } from "@/features/api/courseApi";
-// import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -109,7 +108,7 @@ const LectureTab: React.FC = () => {
   };
 
   const removeLectureHandler = async () => {
-    await removeLecture({ lectureId }); // Pass an object with the lectureId
+    await removeLecture({ lectureId });
   };
 
   useEffect(() => {
@@ -119,80 +118,119 @@ const LectureTab: React.FC = () => {
     }
   }, [removeSuccess]);
 
-  if (lectureIsLoading) return <h1>Loading...</h1>;
+  if (lectureIsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="mt-2">Loading lecture data...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader className="flex justify-between">
-        <div>
-          <CardTitle>Edit Lecture</CardTitle>
-          <CardDescription>
-            Make changes and click save when done.
-          </CardDescription>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            disabled={removeLoading}
-            variant="destructive"
-            onClick={removeLectureHandler}
-          >
-            {removeLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </>
-            ) : (
-              "Remove Lecture"
-            )}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div>
-          <Label>Title</Label>
-          <Input
-            type="text"
-            name="lectureTitle"
-            value={input.lectureTitle}
-            onChange={changeEventHandler}
-            placeholder="Ex. Introduction to Javascript"
-          />
-        </div>
-        {/* <div className="flex items-center space-x-2 my-5">
-          <Switch
-            checked={input.isFree}
-            onCheckedChange={(value) =>
-              setInput({ ...input, isFree: value })
-            }
-            id="is-free"
-          />
-          <Label htmlFor="is-free">Is this video FREE</Label>
-        </div> */}
-
-        {/* {isUploading && (
-          <div className="my-4">
-            <Progress value={uploadProgress} />
-            <p>{uploadProgress}% uploaded</p>
+    <div className="px-0 py-4 sm:px-6 md:px-8">
+      <Card className="w-full">
+        <CardHeader className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 p-4 sm:p-6">
+          <div className="space-y-1">
+            <CardTitle className="text-lg sm:text-xl">Edit Lecture</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
+              Make changes and click save when done.
+            </CardDescription>
           </div>
-        )} */}
+          <div className="flex justify-end mt-2 sm:mt-0">
+            <Button
+              disabled={removeLoading}
+              variant="destructive"
+              onClick={removeLectureHandler}
+              className="w-full sm:w-auto text-xs sm:text-sm"
+            >
+              {removeLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                  Please wait
+                </>
+              ) : (
+                "Remove Lecture"
+              )}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6">
+          <div className="space-y-4 sm:space-y-6">
+            <div>
+              <Label className="text-xs sm:text-sm">Title</Label>
+              <Input
+                type="text"
+                name="lectureTitle"
+                value={input.lectureTitle}
+                onChange={changeEventHandler}
+                placeholder="Ex. Introduction to Javascript"
+                className="w-full text-xs sm:text-sm"
+              />
+            </div>
 
-        <div className="mt-4">
-          <Button
-            disabled={isMutationLoading || isUploading}
-            onClick={updateLectureHandler}
-          >
-            {isMutationLoading || isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </>
-            ) : (
-              "Update Lecture"
-            )}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={input.isFree}
+                onCheckedChange={(value) =>
+                  setInput({ ...input, isFree: value })
+                }
+                id="is-free"
+                className="scale-90 sm:scale-100"
+              />
+              <Label htmlFor="is-free" className="text-xs sm:text-sm">
+                Is this video FREE
+              </Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs sm:text-sm">Video File</Label>
+              <Input
+                type="file"
+                accept="video/*"
+                onChange={selectVideoFile}
+                className="w-full text-xs"
+              />
+              {previewVideo && (
+                <div className="mt-2">
+                  <video
+                    src={previewVideo}
+                    controls
+                    className="w-full max-h-48 sm:max-h-64 rounded-md"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
+              <Button
+                disabled={isMutationLoading || isUploading}
+                onClick={updateLectureHandler}
+                className="w-full sm:w-auto text-xs sm:text-sm"
+              >
+                {isMutationLoading || isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                    Please wait
+                  </>
+                ) : (
+                  "Update Lecture"
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/admin/courses/${courseId}`)}
+                className="w-full sm:w-auto text-xs sm:text-sm"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

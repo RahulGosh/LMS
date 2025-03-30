@@ -56,9 +56,7 @@ const LoginComponent = () => {
     if (registerIsSuccess && registerData) {
       toast.success(registerData.message || "Registered Successfully");
       setActiveTab("login");
-      // Auto-fill the email in login form
       setLoginInput(prev => ({ ...prev, email: signupInput.email }));
-      // Clear the signup form
       setSignupInput({ name: "", email: "", password: "" });
     }
 
@@ -124,128 +122,137 @@ const LoginComponent = () => {
   };
 
   return (
-    <div className="flex items-center w-full justify-center mt-20">
-      <Tabs 
-        value={activeTab} 
-        onValueChange={(value) => setActiveTab(value as "login" | "signup")} 
-        className="w-[400px]"
-      >
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="signup">Signup</TabsTrigger>
-          <TabsTrigger value="login">Login</TabsTrigger>
-        </TabsList>
+    <div className="fixed inset-0 flex items-center justify-center p-4 bg-gray-50">
+      <div className="w-full max-w-md mx-auto">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(value) => setActiveTab(value as "login" | "signup")} 
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="signup">Signup</TabsTrigger>
+            <TabsTrigger value="login">Login</TabsTrigger>
+          </TabsList>
 
-        {/* Signup Tab */}
-        <TabsContent value="signup">
-          <Card>
-            <CardHeader>
-              <CardTitle>Signup</CardTitle>
-              <CardDescription>
-                Create a new account and click signup when you're done.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="space-y-1">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  type="text"
-                  name="name"
-                  placeholder="Eg. patel"
-                  value={signupInput.name}
-                  onChange={(e) => changeInputHandler(e, "signup")}
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  type="email"
-                  name="email"
-                  placeholder="Eg. patel@gmail.com"
-                  value={signupInput.email}
-                  onChange={(e) => changeInputHandler(e, "signup")}
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  type="password"
-                  name="password"
-                  placeholder="Eg. xyz"
-                  value={signupInput.password}
-                  onChange={(e) => changeInputHandler(e, "signup")}
-                  required
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                disabled={registerIsLoading}
-                onClick={() => handleRegistration("signup")}
-              >
-                {registerIsLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
-                  </>
-                ) : (
-                  "Signup"
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
+          {/* Signup Tab */}
+          <TabsContent value="signup" className="mt-4">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-xl">Signup</CardTitle>
+                <CardDescription>
+                  Create a new account and click signup when you're done.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    type="text"
+                    name="name"
+                    placeholder="Eg. patel"
+                    value={signupInput.name}
+                    onChange={(e) => changeInputHandler(e, "signup")}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    type="email"
+                    name="email"
+                    placeholder="Eg. patel@gmail.com"
+                    value={signupInput.email}
+                    onChange={(e) => changeInputHandler(e, "signup")}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    type="password"
+                    name="password"
+                    placeholder="Eg. xyz"
+                    value={signupInput.password}
+                    onChange={(e) => changeInputHandler(e, "signup")}
+                    required
+                    className="w-full"
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-center">
+                <Button
+                  disabled={registerIsLoading}
+                  onClick={() => handleRegistration("signup")}
+                  className="w-full"
+                >
+                  {registerIsLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
+                    </>
+                  ) : (
+                    "Signup"
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
 
-        {/* Login Tab */}
-        <TabsContent value="login">
-          <Card>
-            <CardHeader>
-              <CardTitle>Login</CardTitle>
-              <CardDescription>
-                Login with your credentials here.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  type="email"
-                  name="email"
-                  placeholder="Eg. patel@gmail.com"
-                  value={loginInput.email}
-                  onChange={(e) => changeInputHandler(e, "login")}
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  type="password"
-                  name="password"
-                  placeholder="Eg. xyz"
-                  value={loginInput.password}
-                  onChange={(e) => changeInputHandler(e, "login")}
-                  required
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                disabled={loginIsLoading}
-                onClick={() => handleRegistration("login")}
-              >
-                {loginIsLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
-                  </>
-                ) : (
-                  "Login"
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          {/* Login Tab */}
+          <TabsContent value="login" className="mt-4">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-xl">Login</CardTitle>
+                <CardDescription>
+                  Login with your credentials here.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    type="email"
+                    name="email"
+                    placeholder="Eg. patel@gmail.com"
+                    value={loginInput.email}
+                    onChange={(e) => changeInputHandler(e, "login")}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    type="password"
+                    name="password"
+                    placeholder="Eg. xyz"
+                    value={loginInput.password}
+                    onChange={(e) => changeInputHandler(e, "login")}
+                    required
+                    className="w-full"
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-center">
+                <Button
+                  disabled={loginIsLoading}
+                  onClick={() => handleRegistration("login")}
+                  className="w-full"
+                >
+                  {loginIsLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
+                    </>
+                  ) : (
+                    "Login"
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };

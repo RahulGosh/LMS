@@ -20,62 +20,69 @@ const CourseTable: React.FC = () => {
   const courses = data?.courses ?? [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       {/* Header Section */}
-      <div className="flex justify-between items-center py-6">
-        <h1 className="text-2xl font-bold text-gray-800">Courses</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-4 sm:py-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Courses</h1>
         <Button
           onClick={() => navigate("create")}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg w-full sm:w-auto"
         >
-          <PlusCircle size={18} />
-          Create a New Course
+          <PlusCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="text-sm sm:text-base">Create a New Course</span>
         </Button>
       </div>
 
       {/* Table Section */}
-      <div className="overflow-hidden border rounded-lg shadow-lg">
-        <table className="w-full border-collapse">
-          <thead className="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider">
+      <div className="overflow-x-auto border rounded-lg shadow-lg">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <th className="py-4 px-6 text-left">Title</th>
-              <th className="py-4 px-6 text-left">Price</th>
-              <th className="py-4 px-6 text-left">Status</th>
-              <th className="py-4 px-6 text-left">Action</th>
+              <th scope="col" className="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                Title
+              </th>
+              <th scope="col" className="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                Price
+              </th>
+              <th scope="col" className="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th scope="col" className="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                Action
+              </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
             {courses.length > 0 ? (
               courses.map((course) => (
                 <tr
                   key={course._id}
-                  className="hover:bg-gray-50 transition-colors border-t"
+                  className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="py-4 px-6 text-gray-800 font-medium">
+                  <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-sm sm:text-base font-medium text-gray-900">
                     {course.courseTitle}
                   </td>
-                  <td className="py-4 px-6 text-gray-600">
-                    {course.isFree ? "Free" : course.coursePrice || "NA"} 
-                    {/* {course.coursePrice ? `$${course.coursePrice}` : "NA"} */}
+                  <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-sm sm:text-base text-gray-500">
+                    {course.isFree ? "Free" : course.coursePrice ? `$${course.coursePrice}` : "NA"}
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
                     <Badge
-                      className={`${
+                      className={`text-xs sm:text-sm ${
                         course.isPublished
-                          ? "bg-green-100 text-green-600"
-                          : "bg-yellow-100 text-yellow-600"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
                       {course.isPublished ? "Published" : "Draft"}
                     </Badge>
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
                     <Button
                       onClick={() => navigate(course._id)}
-                      className="flex items-center gap-2 bg-gray-800 hover:bg-gray-900 text-white px-3 py-1.5 rounded-lg"
+                      className="flex items-center gap-1 sm:gap-2 bg-gray-800 hover:bg-gray-900 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm"
                     >
-                      <Edit size={16} />
-                      Edit
+                      <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span>Edit</span>
                     </Button>
                   </td>
                 </tr>
@@ -84,7 +91,7 @@ const CourseTable: React.FC = () => {
               <tr>
                 <td
                   colSpan={4}
-                  className="py-6 text-center text-gray-500 italic"
+                  className="px-4 py-6 text-center text-sm sm:text-base text-gray-500 italic"
                 >
                   No courses available
                 </td>
