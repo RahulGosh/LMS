@@ -5,7 +5,6 @@ import { Link, useParams } from "react-router-dom";
 import LectureTab from "./lectureTab";
 
 const EditLecture = () => {
-
   const { courseId, lectureId } = useParams();
 
   console.log("courseId:", courseId, "lectureId:", lectureId);
@@ -14,8 +13,8 @@ const EditLecture = () => {
     <div>
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
-        <Link to={`/admin/courses/${courseId}/lecture`}>
-        <Button size="icon" variant="outline" className="rounded-full">
+          <Link to={`/admin/courses/${courseId}/lecture`}>
+            <Button size="icon" variant="outline" className="rounded-full">
               <ArrowLeft size={16} />
             </Button>
           </Link>

@@ -40,25 +40,28 @@ import {
 import { toast } from "sonner";
 import { RootState } from "@/app/store";
 import { useSelector } from "react-redux";
+import RatingAndReviews from "@/components/ratingAndReview";
 
 const CourseDetail: React.FC = () => {
   const params = useParams<{ courseId: string }>();
   const courseId = params.courseId || "";
   const navigate = useNavigate();
   const [isPlaying, setIsPlaying] = useState(false);
-  const [expandedLectureId, setExpandedLectureId] = useState<string | null>(null);
+  const [expandedLectureId, setExpandedLectureId] = useState<string | null>(
+    null
+  );
   const [expandedSections, setExpandedSections] = useState({
     tutorial: true,
     content: false,
-    description: false
+    description: false,
   });
 
-  const { user } = useSelector((store: RootState) => store.auth) as { user: User | null };
+  const { user } = useSelector((store: RootState) => store.auth) as {
+    user: User | null;
+  };
 
-  const { data, isLoading, isError, refetch } = useGetCourseDetailWithStatusQuery(
-    courseId,
-    { skip: !courseId }
-  );
+  const { data, isLoading, isError, refetch } =
+    useGetCourseDetailWithStatusQuery(courseId, { skip: !courseId });
 
   useEffect(() => {
     if (courseId) {
@@ -66,7 +69,8 @@ const CourseDetail: React.FC = () => {
     }
   }, [user, courseId, refetch]);
 
-  const [enrollFreeCourse, { isLoading: isEnrolling }] = useEnrollFreeCourseMutation();
+  const [enrollFreeCourse, { isLoading: isEnrolling }] =
+    useEnrollFreeCourseMutation();
 
   const handleEnrollCourse = async () => {
     try {
@@ -126,9 +130,9 @@ const CourseDetail: React.FC = () => {
   };
 
   const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
@@ -139,10 +143,11 @@ const CourseDetail: React.FC = () => {
     return minutes === 60 ? `${hours + 1}h 0m` : `${hours}h ${minutes}m`;
   };
 
-  const totalLectures = course?.lectures?.reduce(
-    (total, lecture) => total + (lecture.subLectures?.length || 0),
-    0
-  ) || 0;
+  const totalLectures =
+    course?.lectures?.reduce(
+      (total, lecture) => total + (lecture.subLectures?.length || 0),
+      0
+    ) || 0;
 
   return (
     <div className="bg-gradient-to-b from-gray-100 to-white">
@@ -161,7 +166,9 @@ const CourseDetail: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-1 sm:mt-2 text-sm sm:text-base">
             <div className="flex items-center gap-1 sm:gap-2">
               <img
-                src={course?.creator?.photoUrl || "https://github.com/shadcn.png"}
+                src={
+                  course?.creator?.photoUrl || "https://github.com/shadcn.png"
+                }
                 alt="Creator"
                 className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover"
               />
@@ -191,71 +198,73 @@ const CourseDetail: React.FC = () => {
       </div>
 
       {/* Mobile Purchase Card */}
-      <div className="block lg:hidden px-4 py-4 mt-4 mb-8"> {/* Added py-4 for spacing */}
-      <Card className="overflow-hidden border-0 shadow-xl">
-        <div className="relative">
-          <img
-            src={course?.courseThumbnail || "/api/placeholder/400/200"}
-            alt="Course thumbnail"
-            className="w-full aspect-video object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-            <h2 className="text-white font-bold text-lg">
-              {course?.courseTitle || "Course Title"}
-            </h2>
-          </div>
-        </div>
-        <CardContent className="p-4 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">
-              {course?.coursePrice
-                ? `$${course.coursePrice.toFixed(2)}`
-                : "Free"}
-            </h1>
-            {purchased && (
-              <Badge
-                variant="outline"
-                className="bg-green-50 text-green-600 border-green-200"
-              >
-                Purchased
-              </Badge>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-center p-4 pt-0">
-          {purchased ? (
-            <Button
-              onClick={handleContinueCourse}
-              className="w-full py-4 sm:py-6 text-base sm:text-lg bg-blue-700 hover:bg-blue-800 transition-colors"
-            >
-              Continue Learning
-            </Button>
-          ) : course?.isFree ? (
-            <Button
-              onClick={handleEnrollCourse}
-              className="w-full py-4 sm:py-6 text-base sm:text-lg bg-green-600 hover:bg-green-700 transition-colors"
-              disabled={isEnrolling}
-            >
-              {isEnrolling ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enrolling...
-                </>
-              ) : (
-                "Enroll this Course"
-              )}
-            </Button>
-          ) : (
-            <div className="w-full">
-              <BuyCourseButton courseId={courseId} />
-              <p className="text-center mt-3 text-xs sm:text-sm text-gray-500">
-                30-day money-back guarantee
-              </p>
+      <div className="block lg:hidden px-4 py-4 mt-4 mb-8">
+        {" "}
+        {/* Added py-4 for spacing */}
+        <Card className="overflow-hidden border-0 shadow-xl">
+          <div className="relative">
+            <img
+              src={course?.courseThumbnail || "/api/placeholder/400/200"}
+              alt="Course thumbnail"
+              className="w-full aspect-video object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+              <h2 className="text-white font-bold text-lg">
+                {course?.courseTitle || "Course Title"}
+              </h2>
             </div>
-          )}
-        </CardFooter>
-      </Card>
-    </div>
+          </div>
+          <CardContent className="p-4 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold">
+                {course?.coursePrice
+                  ? `$${course.coursePrice.toFixed(2)}`
+                  : "Free"}
+              </h1>
+              {purchased && (
+                <Badge
+                  variant="outline"
+                  className="bg-green-50 text-green-600 border-green-200"
+                >
+                  Purchased
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-center p-4 pt-0">
+            {purchased ? (
+              <Button
+                onClick={handleContinueCourse}
+                className="w-full py-4 sm:py-6 text-base sm:text-lg bg-blue-700 hover:bg-blue-800 transition-colors"
+              >
+                Continue Learning
+              </Button>
+            ) : course?.isFree ? (
+              <Button
+                onClick={handleEnrollCourse}
+                className="w-full py-4 sm:py-6 text-base sm:text-lg bg-green-600 hover:bg-green-700 transition-colors"
+                disabled={isEnrolling}
+              >
+                {isEnrolling ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enrolling...
+                  </>
+                ) : (
+                  "Enroll this Course"
+                )}
+              </Button>
+            ) : (
+              <div className="w-full">
+                <BuyCourseButton courseId={courseId} />
+                <p className="text-center mt-3 text-xs sm:text-sm text-gray-500">
+                  30-day money-back guarantee
+                </p>
+              </div>
+            )}
+          </CardFooter>
+        </Card>
+      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto my-4 sm:my-8 px-4 md:px-8 flex flex-col lg:flex-row gap-6 lg:gap-10">
@@ -269,9 +278,7 @@ const CourseDetail: React.FC = () => {
                 height="100%"
                 url={course?.tutorial?.videoUrl || ""}
                 controls={true}
-                light={!isPlaying && course?.courseThumbnail}
-                onPlay={handleVideoPlay}
-                onPause={handleVideoPause}
+                light={course?.courseThumbnail}
                 playIcon={
                   <Button
                     size="lg"
@@ -283,20 +290,18 @@ const CourseDetail: React.FC = () => {
                   </Button>
                 }
               />
-              {!isPlaying && (
-                <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-green-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
-                  Free Tutorial
-                </div>
-              )}
+              <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-green-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
+                Free Tutorial
+              </div>
             </div>
           </Card>
 
           {/* Mobile Collapsible Sections */}
           <div className="lg:hidden space-y-4">
             {/* Tutorial Section */}
-            <Collapsible 
+            <Collapsible
               open={expandedSections.tutorial}
-              onOpenChange={() => toggleSection('tutorial')}
+              onOpenChange={() => toggleSection("tutorial")}
               className="border rounded-lg overflow-hidden"
             >
               <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-gray-50 transition-colors">
@@ -326,9 +331,9 @@ const CourseDetail: React.FC = () => {
             </Collapsible>
 
             {/* Course Content Section */}
-            <Collapsible 
+            <Collapsible
               open={expandedSections.content}
-              onOpenChange={() => toggleSection('content')}
+              onOpenChange={() => toggleSection("content")}
               className="border rounded-lg overflow-hidden"
             >
               <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-gray-50 transition-colors">
@@ -357,7 +362,10 @@ const CourseDetail: React.FC = () => {
                             <div className="flex-shrink-0">
                               {purchased ? (
                                 <div className="bg-green-100 p-2 rounded-full">
-                                  <PlayCircle size={16} className="text-green-600" />
+                                  <PlayCircle
+                                    size={16}
+                                    className="text-green-600"
+                                  />
                                 </div>
                               ) : (
                                 <div className="bg-gray-100 p-2 rounded-full">
@@ -370,7 +378,8 @@ const CourseDetail: React.FC = () => {
                                 {lecture.lectureTitle}
                               </p>
                               <p className="text-xs text-gray-500">
-                                {lecture.subLectures?.length || 0} lectures • {formatHoursToHMM(lecture.totalHours)}
+                                {lecture.subLectures?.length || 0} lectures •{" "}
+                                {formatHoursToHMM(lecture.totalHours)}
                               </p>
                             </div>
                           </div>
@@ -384,27 +393,38 @@ const CourseDetail: React.FC = () => {
                         </CollapsibleTrigger>
                         <CollapsibleContent className="bg-gray-100 border-t">
                           <div className="p-2">
-                            {lecture.subLectures?.map((subLecture: SubLecture) => (
-                              <div
-                                key={subLecture._id}
-                                className="flex items-center gap-3 p-2 hover:bg-gray-100 transition-colors rounded-md text-sm"
-                              >
-                                <div className="flex-shrink-0">
-                                  {purchased ? (
-                                    <Video size={16} className="text-green-600" />
-                                  ) : (
-                                    <Lock size={16} className="text-gray-600" />
-                                  )}
+                            {lecture.subLectures?.map(
+                              (subLecture: SubLecture) => (
+                                <div
+                                  key={subLecture._id}
+                                  className="flex items-center gap-3 p-2 hover:bg-gray-100 transition-colors rounded-md text-sm"
+                                >
+                                  <div className="flex-shrink-0">
+                                    {purchased ? (
+                                      <Video
+                                        size={16}
+                                        className="text-green-600"
+                                      />
+                                    ) : (
+                                      <Lock
+                                        size={16}
+                                        className="text-gray-600"
+                                      />
+                                    )}
+                                  </div>
+                                  <div className="flex-grow">
+                                    <p>{subLecture.subLectureTitle}</p>
+                                  </div>
+                                  <div className="flex-shrink-0 text-gray-500">
+                                    {subLecture.duration.hours > 0 &&
+                                      `${subLecture.duration.hours}h `}
+                                    {subLecture.duration.minutes > 0
+                                      ? `${subLecture.duration.minutes}m`
+                                      : "0m"}
+                                  </div>
                                 </div>
-                                <div className="flex-grow">
-                                  <p>{subLecture.subLectureTitle}</p>
-                                </div>
-                                <div className="flex-shrink-0 text-gray-500">
-                                  {subLecture.duration.hours > 0 && `${subLecture.duration.hours}h `}
-                                  {subLecture.duration.minutes > 0 ? `${subLecture.duration.minutes}m` : "0m"}
-                                </div>
-                              </div>
-                            ))}
+                              )
+                            )}
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
@@ -419,9 +439,9 @@ const CourseDetail: React.FC = () => {
             </Collapsible>
 
             {/* Description Section */}
-            <Collapsible 
+            <Collapsible
               open={expandedSections.description}
-              onOpenChange={() => toggleSection('description')}
+              onOpenChange={() => toggleSection("description")}
               className="border rounded-lg overflow-hidden"
             >
               <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-gray-50 transition-colors">
@@ -435,7 +455,9 @@ const CourseDetail: React.FC = () => {
               <CollapsibleContent className="p-4 pt-0">
                 <div className="prose prose-blue max-w-none text-sm">
                   {course?.description ? (
-                    <div dangerouslySetInnerHTML={{ __html: course.description }} />
+                    <div
+                      dangerouslySetInnerHTML={{ __html: course.description }}
+                    />
                   ) : (
                     <p>No description available.</p>
                   )}
@@ -448,16 +470,27 @@ const CourseDetail: React.FC = () => {
           <div className="hidden lg:block">
             <Tabs defaultValue="tutorial" className="w-full">
               <TabsList className="grid grid-cols-3 mb-6 sm:mb-8">
-                <TabsTrigger value="tutorial" className="text-xs sm:text-base">Tutorial</TabsTrigger>
-                <TabsTrigger value="lectures" className="text-xs sm:text-base">Course Content</TabsTrigger>
-                <TabsTrigger value="description" className="text-xs sm:text-base">Description</TabsTrigger>
+                <TabsTrigger value="tutorial" className="text-xs sm:text-base">
+                  Tutorial
+                </TabsTrigger>
+                <TabsTrigger value="lectures" className="text-xs sm:text-base">
+                  Course Content
+                </TabsTrigger>
+                <TabsTrigger
+                  value="description"
+                  className="text-xs sm:text-base"
+                >
+                  Description
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="tutorial" className="space-y-4 sm:space-y-6">
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <Bookmark className="text-blue-500" size={20} />
-                    <h2 className="text-xl sm:text-2xl font-bold">Free Tutorial</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold">
+                      Free Tutorial
+                    </h2>
                   </div>
                   <div className="prose prose-blue max-w-none text-sm sm:text-base">
                     {course?.tutorial?.tutorialDescription ? (
@@ -518,9 +551,9 @@ const CourseDetail: React.FC = () => {
                                   </div>
                                 ) : (
                                   <div className="bg-gray-100 p-1 sm:p-2 rounded-full">
-                                    <Lock 
-                                      size={16} 
-                                      className="text-gray-600 sm:w-4 sm:h-4" 
+                                    <Lock
+                                      size={16}
+                                      className="text-gray-600 sm:w-4 sm:h-4"
                                     />
                                   </div>
                                 )}
@@ -530,47 +563,59 @@ const CourseDetail: React.FC = () => {
                                   {lecture.lectureTitle}
                                 </p>
                                 <p className="text-xs sm:text-sm text-gray-500">
-                                  {lecture.subLectures?.length || 0} lectures • {formatHoursToHMM(lecture.totalHours)}
+                                  {lecture.subLectures?.length || 0} lectures •{" "}
+                                  {formatHoursToHMM(lecture.totalHours)}
                                 </p>
                               </div>
                             </div>
                             <div className="flex-shrink-0 text-gray-400">
                               {expandedLectureId === lecture._id ? (
-                                <ChevronUp size={16} className="sm:w-4 sm:h-4" />
+                                <ChevronUp
+                                  size={16}
+                                  className="sm:w-4 sm:h-4"
+                                />
                               ) : (
-                                <ChevronDown size={16} className="sm:w-4 sm:h-4" />
+                                <ChevronDown
+                                  size={16}
+                                  className="sm:w-4 sm:h-4"
+                                />
                               )}
                             </div>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="bg-gray-100 border-t">
                             <div className="p-2">
-                              {lecture.subLectures?.map((subLecture: SubLecture) => (
-                                <div
-                                  key={subLecture._id}
-                                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 hover:bg-gray-100 transition-colors rounded-md text-sm"
-                                >
-                                  <div className="flex-shrink-0">
-                                    {purchased ? (
-                                      <Video
-                                        size={16}
-                                        className="text-green-600 sm:w-4 sm:h-4"
-                                      />
-                                    ) : (
-                                      <Lock
-                                        size={16}
-                                        className="text-gray-600 sm:w-4 sm:h-4"
-                                      />
-                                    )}
+                              {lecture.subLectures?.map(
+                                (subLecture: SubLecture) => (
+                                  <div
+                                    key={subLecture._id}
+                                    className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 hover:bg-gray-100 transition-colors rounded-md text-sm"
+                                  >
+                                    <div className="flex-shrink-0">
+                                      {purchased ? (
+                                        <Video
+                                          size={16}
+                                          className="text-green-600 sm:w-4 sm:h-4"
+                                        />
+                                      ) : (
+                                        <Lock
+                                          size={16}
+                                          className="text-gray-600 sm:w-4 sm:h-4"
+                                        />
+                                      )}
+                                    </div>
+                                    <div className="flex-grow">
+                                      <p>{subLecture.subLectureTitle}</p>
+                                    </div>
+                                    <div className="flex-shrink-0 text-gray-500">
+                                      {subLecture.duration.hours > 0 &&
+                                        `${subLecture.duration.hours}h `}
+                                      {subLecture.duration.minutes > 0
+                                        ? `${subLecture.duration.minutes}m`
+                                        : "0m"}
+                                    </div>
                                   </div>
-                                  <div className="flex-grow">
-                                    <p>{subLecture.subLectureTitle}</p>
-                                  </div>
-                                  <div className="flex-shrink-0 text-gray-500">
-                                    {subLecture.duration.hours > 0 && `${subLecture.duration.hours}h `}
-                                    {subLecture.duration.minutes > 0 ? `${subLecture.duration.minutes}m` : "0m"}
-                                  </div>
-                                </div>
-                              ))}
+                                )
+                              )}
                             </div>
                           </CollapsibleContent>
                         </Collapsible>
@@ -584,9 +629,14 @@ const CourseDetail: React.FC = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="description" className="space-y-4 sm:space-y-6">
+              <TabsContent
+                value="description"
+                className="space-y-4 sm:space-y-6"
+              >
                 <div className="prose prose-blue max-w-none text-sm sm:text-base">
-                  <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">About This Course</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
+                    About This Course
+                  </h2>
                   <div
                     dangerouslySetInnerHTML={{
                       __html: course?.description || "",
@@ -696,16 +746,22 @@ const CourseDetail: React.FC = () => {
               </li>
               <li className="flex items-center gap-2">
                 <Book size={16} className="text-blue-500" />
-                <span className="text-sm">{course?.lectures?.length || 0} lectures</span>
+                <span className="text-sm">
+                  {course?.lectures?.length || 0} lectures
+                </span>
               </li>
               <li className="flex items-center gap-2">
                 <GraduationCap size={16} className="text-blue-500" />
-                <span className="text-sm">{course?.courseLevel || "Beginner"} level</span>
+                <span className="text-sm">
+                  {course?.courseLevel || "Beginner"} level
+                </span>
               </li>
             </ul>
           </CardContent>
         </Card>
       </div>
+      <RatingAndReviews courseId={courseId} />
+
     </div>
   );
 };

@@ -19,6 +19,7 @@ export interface LectureType extends Document {
     hours: number;
     minutes: number;
   };
+  course: Types.ObjectId;
   totalMinutes: number; // Total minutes for all sub-lectures
   totalHours: number;   // Total hours (decimal) for all sub-lectures
 }
@@ -67,6 +68,11 @@ const lectureSchema = new Schema<LectureType>(
         minutes: { type: Number, default: 0, min: 0, max: 59 }
       },
       default: { hours: 0, minutes: 0 }
+    },
+    course: {
+      type: Schema.Types.ObjectId,
+      ref: 'Course',
+      required: true
     },
     totalMinutes: {
       type: Number,

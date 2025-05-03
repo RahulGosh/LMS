@@ -251,16 +251,16 @@ export const courseApi = createApi({
     }),
 
     editLecture: builder.mutation<
-      UpdateLectureResponse,
-      { formData: FormData; courseId: string; lectureId: string }
-    >({
-      query: ({ formData, courseId, lectureId }) => ({
-        url: `lectures/${courseId}/${lectureId}`,
-        method: "PUT",
-        body: formData,
-      }),
-      invalidatesTags: [{ type: "REFETCH_Creator_Course" }],
+    UpdateLectureResponse,
+    { lectureTitle: string; courseId: string; lectureId: string }
+  >({
+    query: ({ lectureTitle, courseId, lectureId }) => ({
+      url: `lectures/${courseId}/${lectureId}`,
+      method: "PUT",
+      body: { lectureTitle }, // Send as JSON, not FormData
     }),
+    invalidatesTags: [{ type: "REFETCH_Creator_Course" }],
+  }),
 
     editSubLecture: builder.mutation<
       UpdateSubLectureResponse,

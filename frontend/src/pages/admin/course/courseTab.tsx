@@ -54,7 +54,7 @@ const CourseTab = () => {
     coursePrice: "",
     tutorialDescription: "",
     courseThumbnail: "",
-    tutorialVideo: ""
+    tutorialVideo: "",
   });
 
   const params = useParams();
@@ -70,9 +70,12 @@ const CourseTab = () => {
   const [publishCourse] = usePublishCourseMutation();
 
   const [previewThumbnail, setPreviewThumbnail] = useState<string | null>("");
-  const [previewTutorialVideo, setPreviewTutorialVideo] = useState<string | null>(null);
+  const [previewTutorialVideo, setPreviewTutorialVideo] = useState<
+    string | null
+  >(null);
   const [tutorialVideo, setTutorialVideo] = useState<File | null>(null);
-  const [hasExistingTutorialVideo, setHasExistingTutorialVideo] = useState(false);
+  const [hasExistingTutorialVideo, setHasExistingTutorialVideo] =
+    useState(false);
 
   const navigate = useNavigate();
 
@@ -109,40 +112,49 @@ const CourseTab = () => {
       description: !input.description.trim() ? "Description is required" : "",
       category: !input.category ? "Category is required" : "",
       courseLevel: !input.courseLevel ? "Course level is required" : "",
-      coursePrice: !input.isFree && !input.coursePrice ? "Price is required for paid courses" : "",
-      tutorialDescription: !input.tutorialDescription.trim() ? "Tutorial description is required" : "",
+      coursePrice:
+        !input.isFree && !input.coursePrice
+          ? "Price is required for paid courses"
+          : "",
+      tutorialDescription: !input.tutorialDescription.trim()
+        ? "Tutorial description is required"
+        : "",
       courseThumbnail: !input.courseThumbnail ? "Thumbnail is required" : "",
-      tutorialVideo: !previewTutorialVideo && !hasExistingTutorialVideo ? "Tutorial video is required" : ""
+      tutorialVideo:
+        !previewTutorialVideo && !hasExistingTutorialVideo
+          ? "Tutorial video is required"
+          : "",
     };
 
     setErrors(newErrors);
-    return !Object.values(newErrors).some(error => error);
+    return !Object.values(newErrors).some((error) => error);
   };
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setInput(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: "" }));
+    setInput((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const selectCategory = (value: string) => {
-    setInput(prev => ({ ...prev, category: value }));
-    setErrors(prev => ({ ...prev, category: "" }));
+    setInput((prev) => ({ ...prev, category: value }));
+    setErrors((prev) => ({ ...prev, category: "" }));
   };
 
   const selectCourseLevel = (value: string) => {
-    setInput(prev => ({ ...prev, courseLevel: value }));
-    setErrors(prev => ({ ...prev, courseLevel: "" }));
+    setInput((prev) => ({ ...prev, courseLevel: value }));
+    setErrors((prev) => ({ ...prev, courseLevel: "" }));
   };
 
   const selectThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setInput(prev => ({ ...prev, courseThumbnail: file }));
+      setInput((prev) => ({ ...prev, courseThumbnail: file }));
       const fileReader = new FileReader();
-      fileReader.onloadend = () => setPreviewThumbnail(fileReader.result as string);
+      fileReader.onloadend = () =>
+        setPreviewThumbnail(fileReader.result as string);
       fileReader.readAsDataURL(file);
-      setErrors(prev => ({ ...prev, courseThumbnail: "" }));
+      setErrors((prev) => ({ ...prev, courseThumbnail: "" }));
     }
   };
 
@@ -152,13 +164,13 @@ const CourseTab = () => {
       setTutorialVideo(file);
       const videoUrl = URL.createObjectURL(file);
       setPreviewTutorialVideo(videoUrl);
-      setErrors(prev => ({ ...prev, tutorialVideo: "" }));
+      setErrors((prev) => ({ ...prev, tutorialVideo: "" }));
     }
   };
 
   const updateCourseHandler = async () => {
     if (!courseId) return;
-    
+
     if (!validateForm()) {
       toast.error("Please fill all required fields");
       return;
@@ -171,17 +183,36 @@ const CourseTab = () => {
     formData.append("description", input.description);
     formData.append("category", input.category);
     formData.append("courseLevel", input.courseLevel);
-    
+
     if (!input.isFree) {
-      formData.append("coursePrice", input.coursePrice);
+      // Explicitly convert to string and ensure it's a valid number
+      const price = parseFloat(input.coursePrice).toString();
+      if (!isNaN(parseFloat(price))) {
+        formData.append("coursePrice", price);
+      } else {
+        toast.error("Please enter a valid price");
+        return;
+      }
     }
 
+    // Handle course thumbnail - append only if it's a new file
     if (input.courseThumbnail instanceof File) {
       formData.append("courseThumbnail", input.courseThumbnail);
+    } else if (typeof input.courseThumbnail === "string") {
+      // If it's a string (existing URL), we might need to handle it differently
+      // Depending on your API, you might want to skip it or send it as a different field
+      formData.append("existingThumbnail", input.courseThumbnail);
     }
 
+    // Handle tutorial video
     if (tutorialVideo) {
       formData.append("tutorialVideo", tutorialVideo);
+    } else if (
+      hasExistingTutorialVideo &&
+      !previewTutorialVideo?.startsWith("blob:")
+    ) {
+      // If there's an existing video and no new one was selected
+      formData.append("keepExistingVideo", "true");
     }
 
     formData.append("tutorialDescription", input.tutorialDescription);
@@ -192,11 +223,16 @@ const CourseTab = () => {
   useEffect(() => {
     if (isSuccess) {
       toast.success(data?.message || "Course updated successfully");
+      // Reset file inputs if needed
+      setTutorialVideo(null);
+      setPreviewTutorialVideo(null);
       navigate("/admin/courses");
     }
 
     if (error) {
-      const errorData = (error as FetchBaseQueryError)?.data as { message?: string };
+      const errorData = (error as FetchBaseQueryError)?.data as {
+        message?: string;
+      };
       toast.error(errorData?.message || "Failed to update course");
     }
   }, [isSuccess, error, data, navigate]);
@@ -205,7 +241,10 @@ const CourseTab = () => {
     if (!courseId) return;
 
     try {
-      const response = await publishCourse({ courseId, query: publish }).unwrap();
+      const response = await publishCourse({
+        courseId,
+        query: publish,
+      }).unwrap();
       toast.success(response.message || "Course status updated!");
     } catch (error) {
       console.error("Error occurred:", error);
@@ -213,8 +252,8 @@ const CourseTab = () => {
   };
 
   const handleTutorialDescriptionChange = (value: string) => {
-    setInput(prev => ({ ...prev, tutorialDescription: value }));
-    setErrors(prev => ({ ...prev, tutorialDescription: "" }));
+    setInput((prev) => ({ ...prev, tutorialDescription: value }));
+    setErrors((prev) => ({ ...prev, tutorialDescription: "" }));
   };
 
   const handleRemoveCourse = async () => {
@@ -231,7 +270,9 @@ const CourseTab = () => {
       toast.success(response.message || "Course deleted successfully");
       navigate("/admin/courses");
     } catch (error) {
-      const errorData = (error as FetchBaseQueryError)?.data as { message?: string };
+      const errorData = (error as FetchBaseQueryError)?.data as {
+        message?: string;
+      };
       toast.error(errorData?.message || "Failed to delete course");
     }
   };
@@ -261,7 +302,9 @@ const CourseTab = () => {
             <Button
               variant="outline"
               className="bg-white hover:bg-gray-100 text-blue-800 w-full sm:w-auto"
-              onClick={() => publishStatusHandler(!courseData?.course?.isPublished)}
+              onClick={() =>
+                publishStatusHandler(!courseData?.course?.isPublished)
+              }
             >
               {courseData?.course?.isPublished ? "Unpublish" : "Publish"}
             </Button>
@@ -292,7 +335,9 @@ const CourseTab = () => {
                 type="file"
                 accept="video/*"
                 onChange={selectTutorialVideo}
-                className={`mt-2 w-full ${errors.tutorialVideo ? "border-red-500" : ""}`}
+                className={`mt-2 w-full ${
+                  errors.tutorialVideo ? "border-red-500" : ""
+                }`}
               />
               {previewTutorialVideo && (
                 <video
@@ -302,7 +347,9 @@ const CourseTab = () => {
                 />
               )}
               {errors.tutorialVideo && (
-                <p className="text-red-500 text-sm mt-1">{errors.tutorialVideo}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.tutorialVideo}
+                </p>
               )}
             </div>
 
@@ -315,7 +362,9 @@ const CourseTab = () => {
                 onChange={handleTutorialDescriptionChange}
               />
               {errors.tutorialDescription && (
-                <p className="text-red-500 text-sm mt-1">{errors.tutorialDescription}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.tutorialDescription}
+                </p>
               )}
             </div>
 
@@ -328,22 +377,30 @@ const CourseTab = () => {
                   value={input.courseTitle}
                   onChange={changeEventHandler}
                   placeholder="Ex. Fullstack developer"
-                  className={`mt-2 w-full ${errors.courseTitle ? "border-red-500" : ""}`}
+                  className={`mt-2 w-full ${
+                    errors.courseTitle ? "border-red-500" : ""
+                  }`}
                 />
                 {errors.courseTitle && (
-                  <p className="text-red-500 text-sm mt-1">{errors.courseTitle}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.courseTitle}
+                  </p>
                 )}
               </div>
 
               <div>
-                <Label className="text-gray-700 font-semibold">Subtitle *</Label>
+                <Label className="text-gray-700 font-semibold">
+                  Subtitle *
+                </Label>
                 <Input
                   type="text"
                   name="subTitle"
                   value={input.subTitle}
                   onChange={changeEventHandler}
                   placeholder="Ex. Become a Fullstack developer from zero to hero in 2 months"
-                  className={`mt-2 w-full ${errors.subTitle ? "border-red-500" : ""}`}
+                  className={`mt-2 w-full ${
+                    errors.subTitle ? "border-red-500" : ""
+                  }`}
                 />
                 {errors.subTitle && (
                   <p className="text-red-500 text-sm mt-1">{errors.subTitle}</p>
@@ -351,28 +408,37 @@ const CourseTab = () => {
               </div>
 
               <div>
-                <Label className="text-gray-700 font-semibold">Description *</Label>
+                <Label className="text-gray-700 font-semibold">
+                  Description *
+                </Label>
                 <RichTextEditor input={input} setInput={setInput} />
                 {errors.description && (
-                  <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.description}
+                  </p>
                 )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-gray-700 font-semibold">Category *</Label>
-                  <Select 
-                    value={input.category} 
-                    onValueChange={selectCategory}
-                  >
-                    <SelectTrigger className={`w-full mt-2 ${errors.category ? "border-red-500" : ""}`}>
+                  <Label className="text-gray-700 font-semibold">
+                    Category *
+                  </Label>
+                  <Select value={input.category} onValueChange={selectCategory}>
+                    <SelectTrigger
+                      className={`w-full mt-2 ${
+                        errors.category ? "border-red-500" : ""
+                      }`}
+                    >
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Category</SelectLabel>
                         <SelectItem value="NextJS">NextJS</SelectItem>
-                        <SelectItem value="Data Science">Data Science</SelectItem>
+                        <SelectItem value="Data Science">
+                          Data Science
+                        </SelectItem>
                         <SelectItem value="Frontend Development">
                           Frontend Development
                         </SelectItem>
@@ -391,7 +457,9 @@ const CourseTab = () => {
                     </SelectContent>
                   </Select>
                   {errors.category && (
-                    <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.category}
+                    </p>
                   )}
                 </div>
 
@@ -403,7 +471,11 @@ const CourseTab = () => {
                     value={input.courseLevel}
                     onValueChange={selectCourseLevel}
                   >
-                    <SelectTrigger className={`w-full mt-2 ${errors.courseLevel ? "border-red-500" : ""}`}>
+                    <SelectTrigger
+                      className={`w-full mt-2 ${
+                        errors.courseLevel ? "border-red-500" : ""
+                      }`}
+                    >
                       <SelectValue placeholder="Select a course level" />
                     </SelectTrigger>
                     <SelectContent>
@@ -416,7 +488,9 @@ const CourseTab = () => {
                     </SelectContent>
                   </Select>
                   {errors.courseLevel && (
-                    <p className="text-red-500 text-sm mt-1">{errors.courseLevel}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.courseLevel}
+                    </p>
                   )}
                 </div>
 
@@ -430,12 +504,23 @@ const CourseTab = () => {
                         type="number"
                         name="coursePrice"
                         value={input.coursePrice}
-                        onChange={changeEventHandler}
-                        placeholder="199"
-                        className={`w-full mt-2 ${errors.coursePrice ? "border-red-500" : ""}`}
+                        onChange={(e) => {
+                          // Ensure we only get numbers
+                          const value = e.target.value.replace(/[^0-9.]/g, "");
+                          setInput((prev) => ({ ...prev, coursePrice: value }));
+                          setErrors((prev) => ({ ...prev, coursePrice: "" }));
+                        }}
+                        placeholder="500"
+                        className={`w-full mt-2 ${
+                          errors.coursePrice ? "border-red-500" : ""
+                        }`}
+                        min="0"
+                        step="1"
                       />
                       {errors.coursePrice && (
-                        <p className="text-red-500 text-sm mt-1">{errors.coursePrice}</p>
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.coursePrice}
+                        </p>
                       )}
                     </div>
                   )}
@@ -444,12 +529,12 @@ const CourseTab = () => {
                     <Switch
                       checked={input.isFree}
                       onCheckedChange={(value) => {
-                        setInput(prev => ({
+                        setInput((prev) => ({
                           ...prev,
                           isFree: value,
                           coursePrice: value ? "" : prev.coursePrice,
                         }));
-                        setErrors(prev => ({ ...prev, coursePrice: "" }));
+                        setErrors((prev) => ({ ...prev, coursePrice: "" }));
                       }}
                       id="is-free"
                     />
@@ -468,7 +553,9 @@ const CourseTab = () => {
                   type="file"
                   onChange={selectThumbnail}
                   accept="image/*"
-                  className={`w-full mt-2 ${errors.courseThumbnail ? "border-red-500" : ""}`}
+                  className={`w-full mt-2 ${
+                    errors.courseThumbnail ? "border-red-500" : ""
+                  }`}
                 />
                 {previewThumbnail && (
                   <img
@@ -478,7 +565,9 @@ const CourseTab = () => {
                   />
                 )}
                 {errors.courseThumbnail && (
-                  <p className="text-red-500 text-sm mt-1">{errors.courseThumbnail}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.courseThumbnail}
+                  </p>
                 )}
               </div>
 

@@ -11,15 +11,18 @@ import {
   uploadMedia,
 } from "../utils/cloudinary";
 import { Lecture, SubLecture } from "../models/lectureModel";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
+import { Review } from "../models/reviewModel";
 
-const calculateTotalDuration = (items: { duration?: { hours: number; minutes: number } }[]) => {
+const calculateTotalDuration = (
+  items: { duration?: { hours: number; minutes: number } }[]
+) => {
   let totalMinutes = 0;
-  
-  items.forEach(item => {
+
+  items.forEach((item) => {
     if (item.duration) {
       // Convert hours to minutes and add to total
-      totalMinutes += (item.duration.hours * 60) + item.duration.minutes;
+      totalMinutes += item.duration.hours * 60 + item.duration.minutes;
     }
   });
 
@@ -32,8 +35,8 @@ const calculateTotalDuration = (items: { duration?: { hours: number; minutes: nu
     totalHours: parseFloat((totalMinutes / 60).toFixed(2)), // Keep decimal for totalHours
     duration: {
       hours, // Whole hours only
-      minutes // 0-59 minutes only
-    }
+      minutes, // 0-59 minutes only
+    },
   };
 };
 
@@ -44,16 +47,16 @@ const updateCourseDuration = async (lectureId: string) => {
 
   // Get all lectures for this course
   const lectures = await Lecture.find({ _id: { $in: course.lectures } });
-  
+
   // Calculate total duration from all sub-lectures across all lectures
-  const allSubLectures = lectures.flatMap(lecture => lecture.subLectures);
+  const allSubLectures = lectures.flatMap((lecture) => lecture.subLectures);
   const courseDuration = calculateTotalDuration(allSubLectures);
 
   // Update the course with new duration info
   await Course.findByIdAndUpdate(course._id, {
     totalMinutes: courseDuration.totalMinutes,
     totalHours: courseDuration.totalHours,
-    totalDuration: courseDuration.duration
+    totalDuration: courseDuration.duration,
   });
 };
 
@@ -203,7 +206,16 @@ export const getCourseById = async (
 ): Promise<void> => {
   try {
     const courseId = req.params.courseId;
-    const course = await Course.findById(courseId);
+    const course = await Course.findById(courseId)
+      .populate({
+        path: "reviews",
+        populate: {
+          path: "user",
+          select: "name photoUrl",
+        },
+      })
+      .populate("creator", "name photoUrl");
+
     if (!course) {
       res.status(404).json({
         success: false,
@@ -211,19 +223,17 @@ export const getCourseById = async (
       });
       return;
     }
-    console.log(course, "course");
+
     res.status(200).json({
       success: true,
       course,
     });
-    return;
   } catch (error) {
     console.log(error);
     res.status(500).json({
       success: false,
       message: "Failed to get course by Id",
     });
-    return;
   }
 };
 
@@ -342,13 +352,23 @@ export const createLecture = async (
       return;
     }
 
-    // Create the new lecture
-    const lecture = await Lecture.create({ lectureTitle });
+    // Create the new lecture with course reference
+    const lecture = await Lecture.create({ 
+      lectureTitle,
+      course: courseId,
+      subLectures: [] // Initialize with empty subLectures
+    });
 
-    // Find the course by ID
-    const course = await Course.findById(courseId);
+    // Find the course by ID and update
+    const course = await Course.findByIdAndUpdate(
+      courseId,
+      { $push: { lectures: lecture._id } },
+      { new: true }
+    );
 
     if (!course) {
+      // Rollback lecture creation if course not found
+      await Lecture.findByIdAndDelete(lecture._id);
       res.status(404).json({
         success: false,
         message: "Course not found.",
@@ -356,26 +376,27 @@ export const createLecture = async (
       return;
     }
 
-    // Add the lecture ID to the course's lectures array
-    const lectureId: Types.ObjectId = lecture._id as Types.ObjectId;
-    course.lectures.push(lectureId);
-
-    // Save the updated course
-    await course.save();
-
     res.status(201).json({
       success: true,
       message: "Lecture created successfully.",
       lecture,
     });
-    return;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating lecture:", error);
+    
+    if (error instanceof mongoose.Error.ValidationError) {
+      res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: error.errors
+      });
+      return;
+    }
+    
     res.status(500).json({
       success: false,
       message: "Failed to create lecture.",
     });
-    return;
   }
 };
 
@@ -419,8 +440,8 @@ export const createSubLecture = async (
       publicId,
       duration: {
         hours: parseInt(hours) || 0,
-        minutes: parseInt(minutes) || 0
-      }
+        minutes: parseInt(minutes) || 0,
+      },
     };
 
     // Add sub-lecture to lecture
@@ -440,12 +461,12 @@ export const createSubLecture = async (
 
     // Calculate updated lecture duration
     const lectureDuration = calculateTotalDuration(lecture.subLectures);
-    
+
     // Update lecture with new duration info
     await Lecture.findByIdAndUpdate(lectureId, {
       totalMinutes: lectureDuration.totalMinutes,
       totalHours: lectureDuration.totalHours,
-      totalDuration: lectureDuration.duration
+      totalDuration: lectureDuration.duration,
     });
 
     // Update course duration
@@ -455,7 +476,7 @@ export const createSubLecture = async (
       success: true,
       message: "Sub-lecture created successfully.",
       subLecture: newSubLecture,
-      duration: lectureDuration.duration
+      duration: lectureDuration.duration,
     });
   } catch (error) {
     console.error("Error creating sub-lecture:", error);
@@ -542,26 +563,53 @@ export const editLecture = async (
     const { lectureTitle } = req.body;
     const { courseId, lectureId } = req.params;
 
-    // ✅ Find the lecture by ID and validate it's part of the given course
-    const lecture = await Lecture.findOne({
-      _id: lectureId,
-      course: courseId, // Ensures the lecture belongs to the specified course
-    });
+    console.log("Received IDs:", { courseId, lectureId, lectureTitle });
 
-    if (!lecture) {
+    // 1. First verify the course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      console.log("Course not found");
       res.status(404).json({
         success: false,
-        message: "Lecture not found in the specified course!",
+        message: "Course not found!",
       });
       return;
     }
 
-    // ✅ Only update non-video fields (NO video handling here)
-    if (lectureTitle) lecture.lectureTitle = lectureTitle;
+    // 2. Check if lecture exists in this course
+    const lectureExistsInCourse = course.lectures.some(
+      (lecture) => lecture.toString() === lectureId
+    );
 
-    // ✅ Save updated lecture
-    await lecture.save();
+    if (!lectureExistsInCourse) {
+      console.log(
+        "Lecture not found in course. Course lectures:",
+        course.lectures
+      );
+      res.status(404).json({
+        success: false,
+        message: "Lecture not found in this course!",
+      });
+      return;
+    }
 
+    // 3. Find and update the lecture
+    const lecture = await Lecture.findByIdAndUpdate(
+      lectureId,
+      { lectureTitle },
+      { new: true }
+    );
+
+    if (!lecture) {
+      console.log("Lecture document not found");
+      res.status(404).json({
+        success: false,
+        message: "Lecture document not found!",
+      });
+      return;
+    }
+
+    console.log("Successfully updated lecture:", lecture);
     res.status(200).json({
       success: true,
       message: "Lecture updated successfully.",
@@ -618,12 +666,16 @@ export const editSubLecture = async (
 
     // Update fields
     if (subLectureTitle) subLecture.subLectureTitle = subLectureTitle;
-    
+
     // Update duration if provided
     if (hours !== undefined || minutes !== undefined) {
       subLecture.duration = {
-        hours: hours !== undefined ? parseInt(hours) : subLecture.duration.hours,
-        minutes: minutes !== undefined ? parseInt(minutes) : subLecture.duration.minutes
+        hours:
+          hours !== undefined ? parseInt(hours) : subLecture.duration.hours,
+        minutes:
+          minutes !== undefined
+            ? parseInt(minutes)
+            : subLecture.duration.minutes,
       };
     }
 
@@ -632,12 +684,12 @@ export const editSubLecture = async (
 
     // Calculate updated lecture duration
     const lectureDuration = calculateTotalDuration(lecture.subLectures);
-    
+
     // Update lecture with new duration info
     await Lecture.findByIdAndUpdate(lectureId, {
       totalMinutes: lectureDuration.totalMinutes,
       totalHours: lectureDuration.totalHours,
-      totalDuration: lectureDuration.duration
+      totalDuration: lectureDuration.duration,
     });
 
     // Update course duration
@@ -647,7 +699,7 @@ export const editSubLecture = async (
       success: true,
       message: "Sub-lecture updated successfully.",
       subLecture,
-      duration: lectureDuration.duration
+      duration: lectureDuration.duration,
     });
   } catch (error) {
     console.error("Error editing sub-lecture:", error);
@@ -744,12 +796,12 @@ export const removeSubLecture = async (
 
     // Calculate updated lecture duration
     const lectureDuration = calculateTotalDuration(lecture.subLectures);
-    
+
     // Update lecture with new duration info
     await Lecture.findByIdAndUpdate(lectureId, {
       totalMinutes: lectureDuration.totalMinutes,
       totalHours: lectureDuration.totalHours,
-      totalDuration: lectureDuration.duration
+      totalDuration: lectureDuration.duration,
     });
 
     // Update course duration
@@ -897,7 +949,7 @@ export const removeCourse = async (
 
     // Find and delete all lectures associated with this course
     const lectures = await Lecture.find({ _id: { $in: course.lectures } });
-    
+
     for (const lecture of lectures) {
       // Delete videos of all sublectures
       if (lecture.subLectures && lecture.subLectures.length > 0) {
@@ -907,10 +959,11 @@ export const removeCourse = async (
           }
         }
       }
-      
+
       // Delete the lecture
       await Lecture.findByIdAndDelete(lecture._id);
     }
+    await Review.deleteMany({ course: courseId });
 
     // Finally, delete the course
     await Course.findByIdAndDelete(courseId);

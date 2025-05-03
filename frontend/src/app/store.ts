@@ -4,6 +4,7 @@ import { authApi } from "@/features/api/authApi";
 import { courseApi } from "@/features/api/courseApi";
 import { purchaseApi } from "@/features/api/purchaseApi";
 import { progressApi } from "@/features/api/progressApi";
+import { reviewApi } from "@/features/api/reviewApi";
 
 export const appStore = configureStore({
   reducer: {
@@ -12,9 +13,10 @@ export const appStore = configureStore({
     [courseApi.reducerPath]: courseApi.reducer, // Integrate API reducer
     [purchaseApi.reducerPath]: purchaseApi.reducer, // Integrate API reducer
     [progressApi.reducerPath]: progressApi.reducer, // Integrate API reducer
+    [reviewApi.reducerPath]: reviewApi.reducer, // Integrate API reducer
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(authApi.middleware, courseApi.middleware, purchaseApi.middleware, progressApi.middleware),
+    getDefaultMiddleware().concat(authApi.middleware, courseApi.middleware, purchaseApi.middleware, progressApi.middleware, reviewApi.middleware),
 });
 
 const initializeApp = async () => {

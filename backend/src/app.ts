@@ -7,6 +7,7 @@ import course from "./routes/courseRoute"
 import coursePurchase from "./routes/coursePurchaseRoute"
 import courseProgress from "./routes/courseProgressRoute"
 import dashboard from "./routes/dashboardRoute"
+import review from "./routes/reviewRoute"
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/database";
 import path from "path"
@@ -33,5 +34,6 @@ app.use("/api/v1", course);
 app.use("/api/v1", coursePurchase);
 app.use("/api/v1", courseProgress);
 app.use("/api/v1", dashboard);
+app.use("/api/v1", review);
 
 export default app;

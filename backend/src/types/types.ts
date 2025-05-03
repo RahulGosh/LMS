@@ -21,3 +21,9 @@ export interface CreateCourseCustomRequest extends Request {
   user?: UserType
   id?: string; // Make it optional if it might not always be present
 }
+
+
+
+
+// Review Types
+

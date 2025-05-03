@@ -26,7 +26,7 @@ const HeroSection = () => {
       <div className="max-w-4xl mx-auto relative z-10">
         {/* Heading Section */}
         <div className="space-y-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight transition-all duration-300 hover:text-gray-800">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
               Discover & Master
             </span>{" "}
@@ -90,11 +90,10 @@ const HeroSection = () => {
         <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
           <Button
             onClick={() => navigate(`/course/search?query`)}
-            className="px-8 py-4 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-full hover:opacity-90 transition-all duration-300 hover:shadow-md"
+            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full hover:shadow-md transition-all duration-300"
           >
             Browse All Courses
           </Button>
-          
         </div>
 
         {/* Trust indicators */}
