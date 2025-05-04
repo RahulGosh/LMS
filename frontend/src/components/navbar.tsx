@@ -59,7 +59,6 @@ const Navbar: React.FC = () => {
   const navLinks = [
     { name: "Courses", path: "/courses" },
     { name: "Community", path: "/community" },
-    { name: "About", path: "/about" },
   ];
 
   const isActive = (path: string) => {
@@ -126,24 +125,10 @@ const Navbar: React.FC = () => {
           </DropdownMenu> */}
         </nav>
 
-        {/* Search Bar */}
-        <div className="hidden lg:flex relative max-w-xs w-full mx-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input 
-            placeholder="Search courses..." 
-            className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:ring-blue-500 focus:border-blue-500" 
-          />
-        </div>
-
         {/* User Actions */}
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <Button variant="ghost" size="icon" className="rounded-full relative">
-                <Bell size={20} className="text-gray-600" />
-                <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-              </Button>
-              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <div className="flex items-center gap-2 cursor-pointer">
@@ -175,12 +160,6 @@ const Navbar: React.FC = () => {
                       <Link to="/my-learning" className="flex items-center w-full">
                         <Bookmark size={16} className="mr-2 text-gray-500" />
                         <span>My Courses</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Link to="/settings" className="flex items-center w-full">
-                        <Settings size={16} className="mr-2 text-gray-500" />
-                        <span>Settings</span>
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
@@ -248,16 +227,6 @@ const Navbar: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Search size={20} className="text-gray-600" />
-          </Button>
-          
-          {user && (
-            <Button variant="ghost" size="icon" className="rounded-full relative">
-              <Bell size={20} className="text-gray-600" />
-              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-            </Button>
-          )}
           
           <MobileNavbar user={user} logoutHandler={logoutHandler} />
         </div>
@@ -282,9 +251,6 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({ user, logoutHandler }) => {
   
   const navLinks = [
     { name: "Home", path: "/", icon: <Home size={18} /> },
-    { name: "Courses", path: "/courses", icon: <BookOpen size={18} /> },
-    { name: "Community", path: "/community", icon: <UserIcon size={18} /> },
-    { name: "About", path: "/about", icon: <Bookmark size={18} /> },
   ];
 
   return (
@@ -337,13 +303,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({ user, logoutHandler }) => {
           </SheetHeader>
           
           <div className="p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input 
-                placeholder="Search courses..." 
-                className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-full text-sm" 
-              />
-            </div>
+           
           </div>
           
           <nav className="px-2 py-4 flex-1 overflow-y-auto">
